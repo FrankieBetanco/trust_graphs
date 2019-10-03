@@ -5,6 +5,16 @@
 #include <sstream>
 using namespace std;
 
+#define FIRST 0
+#define LAST 1
+#define AGE 2
+#define GENDER 3
+#define LANGUAGE 4
+#define ID 5
+#define EMAIL 6
+#define SERVICES 7
+#define GROUPS 8
+
 class user { 
 public: 
   string first; 
@@ -77,7 +87,27 @@ public:
       for (int j = 0; j < n_users; j++) {
         adj[i][j] = (unsigned short) stoi(users[i]->permissions);
       }
+      adj[i][i] = 511; 
     }
+  }
+
+  void print_binary_graph(int attribute_num) {
+    cout << "Attribute " << attribute_num << '\n';
+    for (int i = 0; i < adj.size(); i++) {
+      for (int j = 0; j < adj[i].size(); j++) {
+        if ( adj[i][j] & (1 << attribute_num) ) {
+          cout << "1 ";
+        }
+        else {
+          cout << "0 ";
+        }
+      }
+      cout << "\n";
+    }
+  }
+
+  void add_privacy_edge(int attribute_num, int from, int to) {
+        adj[from][to] ^= (1 << attribute_num);
   }
 };
 
@@ -92,6 +122,9 @@ int main(int argc, char **argv) {
   graph g(filename);
   g.parse_input();
   g.construct_graph();
+
+  g.print_binary_graph(FIRST);
+
 
   return 0;
 }
