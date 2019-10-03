@@ -242,7 +242,7 @@ public:
   }
 
   string permissions() {
-    return to_string(rand() % 513);
+    return to_string(rand() % 512);
   }
 
   string full_user() {
