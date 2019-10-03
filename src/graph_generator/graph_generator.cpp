@@ -14,20 +14,11 @@ using namespace std;
 #define EMAIL 6
 #define SERVICES 7
 #define GROUPS 8
+#define PERMISSIONS 9
 
 class user { 
 public: 
-  string first; 
-  string last; 
-  string age; 
-  string gender; 
-  string language; 
-  string id; 
-  string email;
-  string services;
-  string groups; 
-  string permissions;
-
+  vector <string> attributes; 
   int node_num; 
 };
 
@@ -44,33 +35,21 @@ public:
   void parse_input() {
     string line; 
     string field;
-    vector <string> fields; 
     ifstream infile(filename);  
     int start, end;
     user *new_user;
 
     while ( getline(infile, line) ) {
+      new_user = new user();
+      users.push_back(new_user);
       start = 0; 
       end = 0;
       while ( line.find(",", end) != string::npos ) {
         end = line.find(",", start);
         field = line.substr(start, end - start);
-        fields.push_back(field);
+        new_user->attributes.push_back(field);
         start = end+1; 
       }
-      new_user = new user();
-      new_user->first       = fields[0];
-      new_user->last        = fields[1];
-      new_user->age         = fields[2];
-      new_user->gender      = fields[3];
-      new_user->language    = fields[4];
-      new_user->id          = fields[5];
-      new_user->email       = fields[6];
-      new_user->services    = fields[7];
-      new_user->groups      = fields[8];
-      new_user->permissions = fields[9];
-      users.push_back(new_user);
-      fields.clear();
     }
   }
 
@@ -85,7 +64,7 @@ public:
 
     for (int i = 0; i < n_users; i++) {
       for (int j = 0; j < n_users; j++) {
-        adj[i][j] = (unsigned short) stoi(users[i]->permissions);
+        adj[i][j] = (unsigned short) stoi(users[i]->attributes[PERMISSIONS]);
       }
       adj[i][i] = 511; 
     }
@@ -109,6 +88,26 @@ public:
   void add_privacy_edge(int attribute_num, int from, int to) {
         adj[from][to] ^= (1 << attribute_num);
   }
+
+  void edge_view(int from, int to) {
+    unsigned short permissions; 
+    string attributes; 
+
+    permissions = adj[to][from];
+    for (int i = 0; i < 9; i++) {
+      if ( permissions & (1 << i) ) {
+        attributes += users[to]->attributes[i];
+      }
+      else { 
+        attributes += "X";
+      }
+      if ( i + 1 < 9 ) {
+        attributes += ", ";
+      }
+    }
+    cout << "User " << from << " view of User " << to << ": " 
+      << attributes << '\n';
+  }
 };
 
 int main(int argc, char **argv) {
@@ -123,8 +122,10 @@ int main(int argc, char **argv) {
   g.parse_input();
   g.construct_graph();
 
-  g.print_binary_graph(FIRST);
-
+  string rv;
+  for (int i = 0; i < 100; i++) {
+    g.edge_view(0, i); 
+  }
 
   return 0;
 }
