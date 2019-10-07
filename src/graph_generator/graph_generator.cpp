@@ -30,6 +30,8 @@ private:
 public: 
   graph(string filename) {
     this->filename = filename; 
+    parse_input();
+    construct_graph();
   }
 
   void parse_input() {
@@ -119,12 +121,10 @@ int main(int argc, char **argv) {
   filename = argv[1];
 
   graph g(filename);
-  g.parse_input();
-  g.construct_graph();
 
   string rv;
-  for (int i = 0; i < 100; i++) {
-    g.edge_view(0, i); 
+  for (int i = 0; i < 10; i++) {
+    g.edge_view(9, i); 
   }
 
   return 0;
