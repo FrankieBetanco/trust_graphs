@@ -3,6 +3,8 @@
 #include <random>
 #include <cstdlib>
 #include <time.h>
+
+#include "input_generator.h"
 using namespace std;
 
 const char *firstNames[] = 
@@ -180,102 +182,83 @@ const char *groups[] =
   "Linux_Users", "PC_Users", "Mac_Users", "Vim_Users", 
   "Emacs_Users"};
 
-class input_generator{
-public:
-  input_generator(unsigned seed) {
-    srand(seed);
-  }
+input_generator::input_generator(unsigned seed) {
+  srand(seed);
+}
 
-  string first_name() {
-    return string(firstNames[rand() % 200]);
-  }
+string input_generator::first_name() {
+  return string(firstNames[rand() % 200]);
+}
 
-  string last_name() {
-    return string(lastNames[rand() % 96]);
-  }
+string input_generator::last_name() {
+  return string(lastNames[rand() % 96]);
+}
 
-  string age() {
-    return to_string(rand() % 70 + 13);
-  }
+string input_generator::age() {
+  return to_string(rand() % 70 + 13);
+}
 
-  string gender() {
-    string rv; 
-    if ( rand() % 2 == 0 ) {
-      rv = "M";
-    } else {
-      rv = "F";
+string input_generator::gender() {
+  string rv; 
+  if ( rand() % 2 == 0 ) {
+    rv = "M";
+  } else {
+    rv = "F";
+  }
+  return rv;
+}
+
+string input_generator::primary_language() {
+  return string(languages[rand() % 11]);
+}
+
+string input_generator::sns_login_id() {
+  return to_string(rand() % 100000 + 1);
+}
+
+string input_generator::email(string firstName, string lastName) {
+  return firstName + "." + lastName + "@" + string(domains[rand() % 4]);
+}
+
+string input_generator::choose_rand_sublist(const char *list[], int list_len) {
+  int num_to_choose = rand() % 3 + 1;
+  string sublist; 
+
+  for (int i = 0; i < num_to_choose; i++) {
+    sublist += list[rand() % list_len]; 
+    if ( i + 1 < num_to_choose ) {
+      sublist += " ";
     }
-    return rv;
   }
+  return sublist;
+}
 
-  string primary_language() {
-    return string(languages[rand() % 11]);
-  }
+string input_generator::group_membership() {
+  return choose_rand_sublist(groups, 11);
+}
 
-  string sns_login_id() {
-    return to_string(rand() % 100000 + 1);
-  }
+string input_generator::subscribed_to_services() {
+  return choose_rand_sublist(services, 6);
+}
 
-  string email(string firstName, string lastName) {
-    return firstName + "." + lastName + "@" + string(domains[rand() % 4]);
-  }
+string input_generator::permissions() {
+  return to_string(rand() % 512);
+}
 
-  string choose_rand_sublist(const char *list[], int list_len) {
-    int num_to_choose = rand() % 3 + 1;
-    string sublist; 
+string input_generator::full_user() {
+  string user;
+  string firstName = first_name(); 
+  string lastName = last_name(); 
 
-    for (int i = 0; i < num_to_choose; i++) {
-      sublist += list[rand() % list_len]; 
-      if ( i + 1 < num_to_choose ) {
-        sublist += " ";
-      }
-    }
-    return sublist;
-  }
-
-  string group_membership() {
-    return choose_rand_sublist(groups, 11);
-  }
-
-  string subscribed_to_services() {
-    return choose_rand_sublist(services, 6);
-  }
-
-  string permissions() {
-    return to_string(rand() % 512);
-  }
-
-  string full_user() {
-    string user;
-    string firstName = first_name(); 
-    string lastName = last_name(); 
-
-    user += firstName;
-    user += "," + lastName; 
-    user += "," + age();
-    user += "," + gender();
-    user += "," + primary_language();
-    user += "," + sns_login_id();
-    user += "," + email(firstName, lastName);
-    user += "," + subscribed_to_services();
-    user += "," + group_membership();
-    user += "," + permissions();
-    return user;
-  }
-};
-
-int main(int argc, char **argv) {
-  int n_users;
-  if ( argc < 2 ) {
-    cout << "Usage: input_gen [number of users to generate]\n";
-    return -1;
-  }
-  n_users = stoi(argv[1]);
-
-  input_generator gen(time(NULL));
-  for (int i = 0; i < n_users; i++) {
-    cout << gen.full_user() << '\n';
-  }
-
-  return 0;
+  user += firstName;
+  user += "," + lastName; 
+  user += "," + age();
+  user += "," + gender();
+  user += "," + primary_language();
+  user += "," + sns_login_id();
+  user += "," + email(firstName, lastName);
+  user += "," + subscribed_to_services();
+  user += "," + group_membership();
+  user += "," + permissions();
+  return user;
 }
