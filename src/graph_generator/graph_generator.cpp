@@ -23,7 +23,7 @@ graph::graph(string filename) {
   construct_graph();
 }
 
-void graph::edge_view(int from, int to) {
+void graph::node_view(int from, int to) {
   unsigned short permissions; 
   string attributes; 
 
@@ -43,9 +43,9 @@ void graph::edge_view(int from, int to) {
     << attributes << '\n';
 }
 
-void graph::edge_view_all(int from) {
+void graph::node_view_all(int from) {
   for (int to = 0; to < adj.size(); to++) {
-    edge_view(from, to);  
+    node_view(from, to);  
   }
 }
 
