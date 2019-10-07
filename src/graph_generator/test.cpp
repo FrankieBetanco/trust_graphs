@@ -13,10 +13,7 @@ int main(int argc, char **argv) {
 
   graph g(filename);
 
-  string rv;
-  for (int i = 0; i < 10; i++) {
-    g.edge_view(9, i); 
-  }
+  g.edge_view_all(1); 
 
   return 0;
 }

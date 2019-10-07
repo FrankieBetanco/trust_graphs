@@ -43,6 +43,12 @@ void graph::edge_view(int from, int to) {
     << attributes << '\n';
 }
 
+void graph::edge_view_all(int from) {
+  for (int to = 0; to < adj.size(); to++) {
+    edge_view(from, to);  
+  }
+}
+
 void graph::parse_input() {
   string line; 
   string field;

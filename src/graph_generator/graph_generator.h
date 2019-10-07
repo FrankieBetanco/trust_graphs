@@ -15,6 +15,7 @@ public:
 
   graph(std::string filename);
   void edge_view(int from, int to);
+  void edge_view_all(int from); 
   void add_privacy_edge(int attribute_num, int from, int to);
 private: 
   void parse_input();
