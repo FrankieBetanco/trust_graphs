@@ -27,6 +27,7 @@ public:
   void add_privacy_edge(int attribute_num, int from, int to);
   void print_binary_graph(int attribute_num);
   void print_groups(); 
+  void print_group_membership_graph();
 private: 
   void parse_input();
   void construct_graph();

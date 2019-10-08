@@ -47,6 +47,7 @@ int main(int argc, char **argv) {
 
   if ( action == "g" ) {
     g.print_groups();
+    g.print_group_membership_graph();
   }
 
   return 0;

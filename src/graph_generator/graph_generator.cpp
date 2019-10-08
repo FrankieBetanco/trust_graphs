@@ -4,10 +4,12 @@
 #include <fstream>
 #include <sstream>
 #include <map>
+#include <algorithm>
 
 #include "graph_generator.h"
 using namespace std;
 
+// These are used to index into the fields of the user attributes
 #define FIRST 0
 #define LAST 1
 #define AGE 2
@@ -173,10 +175,36 @@ void graph::print_binary_graph(int attribute_num) {
 
 // print out the list of groups and their members; 
 void graph::print_groups() {
-  for (int i = 0; i < this->groups.size(); i++) {
-    cout << "group name : " << setw(30) << setfill('.') << left << this->groups[i]->group_name << "Members : ";
-    for (int j = 0; j < this->groups[i]->members.size(); j++) {
-      cout << this->groups[i]->members[j] << " ";
+  for (int i = 0; i < groups.size(); i++) {
+    cout << "group name : " << setw(30) << setfill('.') << left 
+      << groups[i]->group_name << "Members : ";
+    for (int j = 0; j < groups[i]->members.size(); j++) {
+      cout << groups[i]->members[j] << " ";
+    }
+    cout << '\n';
+  }
+}
+
+void graph::print_group_membership_graph() {
+  for (int i = 0; i < groups.size(); i++) {
+    cout << groups[i]->group_name << " = " << i << endl;;
+  }
+  cout << setw(10) << setfill(' ') << " ";
+  for (int i = 0; i < groups.size(); i++) {
+    cout << setw(4) << i;
+  }
+  cout << "\n";
+  cout << setw(53) << setfill('-') << "-" << '\n';
+  cout << setfill(' ');
+  for (int i = 0; i < users.size(); i++) {
+    cout << setw(10) << "User " + to_string(i) + ": ";
+    for (int j = 0; j < groups.size(); j++) {
+      if ( find(groups[j]->members.begin(), groups[j]->members.end(), i) 
+          != groups[j]->members.end() ) {
+        cout << setw(4) << "1";
+      } else {
+        cout << setw(4) << "0";
+      }
     }
     cout << '\n';
   }
