@@ -25,6 +25,13 @@ graph::graph(string filename) {
 }
 
 void graph::node_view(int from, int to) {
+  if ( from < 0 || from >= adj.size() ) {
+    cerr << "Error: from(" << from << ") out of range.\n";
+    return;
+  } else if ( to < 0 || to >= adj.size() ) {
+    cerr << "Error: to (" << to << ") out of range.\n";
+    return;
+  }
   unsigned short permissions; 
   string attributes; 
 
@@ -45,6 +52,10 @@ void graph::node_view(int from, int to) {
 }
 
 void graph::node_view_all(int from) {
+  if ( from < 0 || from >= adj.size() ) {
+    cerr << "Error: from(" << from << ") out of range.\n";
+    return;
+  }
   for (int to = 0; to < adj.size(); to++) {
     node_view(from, to);  
   }
@@ -89,6 +100,10 @@ void graph::construct_graph() {
 }
 
 void graph::print_binary_graph(int attribute_num) {
+  if ( attribute_num < 0 || attribute_num > 8 ) {
+    cerr << "Error: attribute_num(" << attribute_num << ") out of range.\n"; 
+    return;
+  }
   cout << "Attribute " << attribute_num << ": ";
   switch (attribute_num) {
     case 0: cout << "First Name\n"; 
@@ -137,5 +152,10 @@ void graph::print_binary_graph(int attribute_num) {
 }
 
 void graph::add_privacy_edge(int attribute_num, int from, int to) {
+  if ( from < 0 || from > adj.size() ) {
+    cerr << "Error: from(" << from << ") out of range.\n";
+  } else if ( to < 0 || from > adj.size() ) {
+    cerr << "Error: to(" << to << ") out of range.\n";
+  }
       adj[from][to] |= (1 << attribute_num);
 }
