@@ -45,5 +45,9 @@ int main(int argc, char **argv) {
     }
   }
 
+  if ( action == "g" ) {
+    g.print_groups();
+  }
+
   return 0;
 }

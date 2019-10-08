@@ -3,6 +3,7 @@
 #include <string> 
 #include <fstream>
 #include <sstream>
+#include <map>
 
 #include "graph_generator.h"
 using namespace std;
@@ -37,6 +38,8 @@ void graph::node_view(int from, int to) {
 
   permissions = adj[to][from];
   for (int i = 0; i < 9; i++) {
+    // if the permission bit is set, then the user has declared this 
+    // information private, and it should not be printed
     if ( permissions & (1 << i) ) {
       attributes += "X";
     }
@@ -64,11 +67,13 @@ void graph::node_view_all(int from) {
 void graph::parse_input() {
   string line; 
   string field;
+  map <std::string, group *> groups;
   ifstream infile(filename);  
   int start, end;
   user *new_user;
 
   while ( getline(infile, line) ) {
+    // parse fields of the user and store information in new user class
     new_user = new user();
     users.push_back(new_user);
     start = 0; 
@@ -79,7 +84,22 @@ void graph::parse_input() {
       new_user->attributes.push_back(field);
       start = end+1; 
     }
+    // determine what groups the user is a member of and add them to the 
+    // member list for each group
+    stringstream ss(new_user->attributes[GROUPS]); 
+    string word; 
+    while ( ss >> word ) {
+      // create a new group if one does not exist
+      if ( groups.find(word) == groups.end() ) {
+        groups[word] = new group(); 
+        groups[word]->group_name = word; 
+        this->groups.push_back(groups[word]);
+      }
+      // add the index of the user to the group
+      groups[word]->members.push_back(users.size() - 1);
+    }
   }
+
 }
 
 void graph::construct_graph() {
@@ -148,6 +168,17 @@ void graph::print_binary_graph(int attribute_num) {
       }
     }
     cout << "\n";
+  }
+}
+
+// print out the list of groups and their members; 
+void graph::print_groups() {
+  for (int i = 0; i < this->groups.size(); i++) {
+    cout << "group name : " << setw(30) << setfill('.') << left << this->groups[i]->group_name << "Members : ";
+    for (int j = 0; j < this->groups[i]->members.size(); j++) {
+      cout << this->groups[i]->members[j] << " ";
+    }
+    cout << '\n';
   }
 }
 
