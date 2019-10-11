@@ -242,7 +242,10 @@ string input_generator::subscribed_to_services() {
 }
 
 string input_generator::permissions() {
-  return to_string(rand() % 512);
+  unsigned short anonymity, privacy;
+  privacy = rand() % 512;
+  anonymity = ~privacy;
+  return to_string(privacy) + "," + to_string(anonymity);
 }
 
 string input_generator::full_user() {
