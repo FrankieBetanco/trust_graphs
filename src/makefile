@@ -1,12 +1,9 @@
-all: input_generator graph_generator
+SUBDIRS = graph_generator input_generator
+.PHONY: $(SUBDIRS) clean
 
-.PHONY: input_generator graph_generator clean
-
-input_generator: 
-	cd input_generator && $(MAKE)
-
-graph_generator: 
-	cd graph_generator && $(MAKE)
+all: $(SUBDIRS)
+$(SUBDIRS): 
+	$(MAKE) -C $@
 
 clean:
 	cd graph_generator && $(MAKE) clean
