@@ -9,7 +9,7 @@ int main(int argc, char **argv) {
 
   if ( argc < 3 ) {
     cout << "usage: graph_gen [filename] [action]\n";
-    cout << "actions: v, p\n";
+    cout << "actions: v, p, g\n";
     return -1;
   }
   filename = argv[1];
