@@ -22,12 +22,20 @@ using namespace std;
 #define PERMISSIONS 9
 #define PERMISSIONS_ANON 10
 
+/* constructor */
 graph::graph(string filename) {
   this->filename = filename; 
   parse_input();
   construct_graph();
 }
 
+/* prints out the information that node "from" can read of node "to". 
+ * This is done by examining the edges coming from "to" to "from", and 
+ * seeing what is declared as private.
+ * params: 
+ *  from: index of the viewing node in the adjacency list
+ *  to: index of the node to bee viewd in the adjacency list
+ */
 void graph::node_view(int from, int to) {
   if ( from < 0 || from >= adj_privacy.size() ) {
     cerr << "Error: from(" << from << ") out of range.\n";
@@ -57,6 +65,10 @@ void graph::node_view(int from, int to) {
     << attributes << '\n';
 }
 
+/* print out the node "from"'s view of all other nodes in the system 
+ * params: 
+ *  from: the index of the viewing node in the adjacency list
+ */
 void graph::node_view_all(int from) {
   if ( from < 0 || from >= adj_privacy.size() ) {
     cerr << "Error: from(" << from << ") out of range.\n";
@@ -67,6 +79,9 @@ void graph::node_view_all(int from) {
   }
 }
 
+/* parse the input csv. For each line, create a new user, and save a pointer
+ * to the newly created user in the vector of users
+ */
 void graph::parse_input() {
   string line; 
   string field;
@@ -105,9 +120,13 @@ void graph::parse_input() {
 
 }
 
+/* after parsing the input, create adjacency matrices for the privacy 
+ * and anonymity graphs
+ */
 void graph::construct_graph() {
   int n_users; 
 
+  // allocate memory adjacency matrices
   n_users = users.size(); 
   adj_privacy.resize(n_users);
   adj_anonymity.resize(n_users);
@@ -127,6 +146,16 @@ void graph::construct_graph() {
   }
 }
 
+/* print the adjacency matrix for attribute_num in adjacency matrix adj. Since
+ * each entry in the matrix will be a number, and whether each bit of the
+ * number is set determines if there is an edge. E.g. If there were only 
+ * 3 attributes: first name, last name, and age, the number 3 = 0b011 means
+ * that first name is publc, but last name and age are private 
+ * params: 
+ *  attribute_num: The numbeer of the attribute for which an adjacency matrix
+ *  should be printed
+ *  adj: the adjacency matrix to search
+ */
 void graph::print_binary_graph(int attribute_num, vector<vector <unsigned short > > &adj) {
   if ( attribute_num < 0 || attribute_num > 8 ) {
     cerr << "Error: attribute_num(" << attribute_num << ") out of range.\n"; 
@@ -179,11 +208,21 @@ void graph::print_binary_graph(int attribute_num, vector<vector <unsigned short 
   }
 }
 
+/* wrapper method for print_binary_graph to print the adjacency matrix
+ * for privacy for a given attribute
+ * params: 
+ *  attribute_num: the number of the attrbute to be printed 
+ */
 void graph::print_privacy_graph(int attribute_num) {
   cout << "Privacy graph, ";
   print_binary_graph(attribute_num, adj_privacy);
 }
 
+/* wrapper method for print_binary_graph to print the adjacency matrix
+ * for anonymity for a given attribute 
+ * params: 
+ *  attribute_num: the number of the attrbute to be printed 
+ */
 void graph::print_anonymity_graph(int attribute_num) {
   cout << "Anonymity Graph, ";
   print_binary_graph(attribute_num, adj_anonymity);
@@ -201,6 +240,8 @@ void graph::print_groups() {
   }
 }
 
+/* This will print a matrix showing the for which groups each user is a member. 
+ */
 void graph::print_group_membership_graph() {
   for (int i = 0; i < groups.size(); i++) {
     cout << groups[i]->group_name << " = " << i << endl;;
@@ -226,7 +267,16 @@ void graph::print_group_membership_graph() {
   }
 }
 
+/* this will create a new privacy edge for an attribute "attribute_num" from 
+ * node "from" to node "to"
+ * params: 
+ *  attribute_num: the attribute for which to add a privacy edge
+ *  from: the originating node for the edge
+ *  to: the terminating node for the edge
+ */
 void graph::add_privacy_edge(int attribute_num, int from, int to) {
+  //TODO: error check to make sure there is not an existing anonymity edge
+  //that will conflict
   if ( from < 0 || from > adj_privacy.size() ) {
     cerr << "Error: from(" << from << ") out of range.\n";
   } else if ( to < 0 || from > adj_privacy.size() ) {
@@ -234,3 +284,5 @@ void graph::add_privacy_edge(int attribute_num, int from, int to) {
   }
       adj_privacy[from][to] |= (1 << attribute_num);
 }
+
+//TODO: add method to create anonymity edges
