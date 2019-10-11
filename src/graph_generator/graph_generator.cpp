@@ -20,6 +20,7 @@ using namespace std;
 #define SERVICES 7
 #define GROUPS 8
 #define PERMISSIONS 9
+#define PERMISSIONS_ANON 10
 
 graph::graph(string filename) {
   this->filename = filename; 
@@ -28,17 +29,17 @@ graph::graph(string filename) {
 }
 
 void graph::node_view(int from, int to) {
-  if ( from < 0 || from >= adj.size() ) {
+  if ( from < 0 || from >= adj_privacy.size() ) {
     cerr << "Error: from(" << from << ") out of range.\n";
     return;
-  } else if ( to < 0 || to >= adj.size() ) {
+  } else if ( to < 0 || to >= adj_privacy.size() ) {
     cerr << "Error: to (" << to << ") out of range.\n";
     return;
   }
   unsigned short permissions; 
   string attributes; 
 
-  permissions = adj[to][from];
+  permissions = adj_privacy[to][from];
   for (int i = 0; i < 9; i++) {
     // if the permission bit is set, then the user has declared this 
     // information private, and it should not be printed
@@ -57,11 +58,11 @@ void graph::node_view(int from, int to) {
 }
 
 void graph::node_view_all(int from) {
-  if ( from < 0 || from >= adj.size() ) {
+  if ( from < 0 || from >= adj_privacy.size() ) {
     cerr << "Error: from(" << from << ") out of range.\n";
     return;
   }
-  for (int to = 0; to < adj.size(); to++) {
+  for (int to = 0; to < adj_privacy.size(); to++) {
     node_view(from, to);  
   }
 }
@@ -108,20 +109,25 @@ void graph::construct_graph() {
   int n_users; 
 
   n_users = users.size(); 
-  adj.resize(n_users);
-  for (int i = 0; i < adj.size(); i++) {
-    adj[i].resize(n_users);
+  adj_privacy.resize(n_users);
+  adj_anonymity.resize(n_users);
+  for (int i = 0; i < adj_privacy.size(); i++) {
+    adj_privacy[i].resize(n_users);
+    adj_anonymity[i].resize(n_users);
   }
 
+  // construct the privacy graph and anonymity graph
   for (int i = 0; i < n_users; i++) {
     for (int j = 0; j < n_users; j++) {
-      adj[i][j] = (unsigned short) stoi(users[i]->attributes[PERMISSIONS]);
+      adj_privacy[i][j] = (unsigned short) stoi(users[i]->attributes[PERMISSIONS]);
+      adj_anonymity[i][j] = (unsigned short) stoi(users[i]->attributes[PERMISSIONS_ANON]);
     }
-    adj[i][i] = 0; 
+    adj_privacy[i][i] = 0; 
+    adj_anonymity[i][i] = 0; 
   }
 }
 
-void graph::print_binary_graph(int attribute_num) {
+void graph::print_binary_graph(int attribute_num, vector<vector <unsigned short > > &adj) {
   if ( attribute_num < 0 || attribute_num > 8 ) {
     cerr << "Error: attribute_num(" << attribute_num << ") out of range.\n"; 
     return;
@@ -173,6 +179,16 @@ void graph::print_binary_graph(int attribute_num) {
   }
 }
 
+void graph::print_privacy_graph(int attribute_num) {
+  cout << "Privacy graph, ";
+  print_binary_graph(attribute_num, adj_privacy);
+}
+
+void graph::print_anonymity_graph(int attribute_num) {
+  cout << "Anonymity Graph, ";
+  print_binary_graph(attribute_num, adj_anonymity);
+}
+
 // print out the list of groups and their members; 
 void graph::print_groups() {
   for (int i = 0; i < groups.size(); i++) {
@@ -211,10 +227,10 @@ void graph::print_group_membership_graph() {
 }
 
 void graph::add_privacy_edge(int attribute_num, int from, int to) {
-  if ( from < 0 || from > adj.size() ) {
+  if ( from < 0 || from > adj_privacy.size() ) {
     cerr << "Error: from(" << from << ") out of range.\n";
-  } else if ( to < 0 || from > adj.size() ) {
+  } else if ( to < 0 || from > adj_privacy.size() ) {
     cerr << "Error: to(" << to << ") out of range.\n";
   }
-      adj[from][to] |= (1 << attribute_num);
+      adj_privacy[from][to] |= (1 << attribute_num);
 }

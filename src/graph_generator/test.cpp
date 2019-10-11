@@ -39,7 +39,8 @@ int main(int argc, char **argv) {
 
   if ( action == "p" ) {
     if ( argc == 4 ) {
-      g.print_binary_graph(stoi(argv[3]));
+      g.print_privacy_graph(stoi(argv[3]));
+      g.print_anonymity_graph(stoi(argv[3]));
     } else {
       cout << "Usage: graph_gen [filename] p [attribute num]\n";
     }
