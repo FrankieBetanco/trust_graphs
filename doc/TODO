@@ -1,0 +1,26 @@
+Problem II
+----------
+[ ] Write code to identify a set of cross-sectional nodes between user (group) 
+    graphs with respect to (a/an) attribute(s). 
+[ ] Then, make it BFS and DFS traversable. 
+
+Problem III
+-----------
+Write code to identify: 
+[ ] Strongly-(trusted/untrusted)-components
+[ ] Shortest-trust-path (single-source, single-destination)
+[ ] Minimum-spanning-trust-tree
+
+Deliverables
+------------
+-Source code, test inputs
+-Report on data structures and algorithms
+ -Overall Data Structure Description
+ -Each data structure and algorithm description
+ -Proposed (original) semi-sovereign identity management system under the 
+  constraint of privacy and anonymity as studied in the assignment, and present
+  a working demo
+-Answer the following questions:
+ -Symbolic definitoin of privacy and anonymity and its algorithm.
+ -A new trust variable beyond PPAI.
+ -How to guarantee trust history be kept confidential? Show algorithm.
