@@ -7,13 +7,15 @@ $(SUBDIRS):
 
 install:
 	mkdir -p ../bin
-	cp graph_generator/*_gen ../bin
-	cp input_generator/*_gen ../bin
+	mkdir -p ../lib
+	cp graph_generator/*_gen ../bin/
+	mv graph_generator/*.a ../lib/
+	cp input_generator/*_gen ../bin/
+	mv input_generator/*.a ../lib/
 
 
 clean:
 	cd graph_generator && $(MAKE) clean
 	cd input_generator && $(MAKE) clean
 	cd trust_graphs && $(MAKE) clean
-	rm -rf ../bin
-	rm -rf ../lib/*.a 
+	rm -rf ../bin ../lib
