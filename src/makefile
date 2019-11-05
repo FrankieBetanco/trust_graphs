@@ -1,4 +1,4 @@
-SUBDIRS = graph_generator input_generator
+SUBDIRS = graph_generator input_generator trust_graphs
 .PHONY: $(SUBDIRS) clean
 
 all: $(SUBDIRS)
@@ -14,5 +14,6 @@ install:
 clean:
 	cd graph_generator && $(MAKE) clean
 	cd input_generator && $(MAKE) clean
+	cd trust_graphs && $(MAKE) clean
 	rm -rf ../bin
 	rm -rf ../lib/*.a 
