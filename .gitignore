@@ -1,2 +1,9 @@
-# Ignore generated input files
+# Generated input files
 *.csv
+
+# results of compilation
+*.o 
+*.a
+graph_gen
+input_gen
+trust_graph
