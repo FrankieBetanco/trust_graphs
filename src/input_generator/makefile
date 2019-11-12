@@ -5,7 +5,8 @@ LIB = ../../lib
 
 input_generator.o: input_generator.cpp
 	g++ -I$(INC) -std=c++11 -c input_generator.cpp
-	ar rcs libinput_generator.a input_generator.o
+	mkdir -p $(LIB)
+	ar rcs $(LIB)/libinput_generator.a input_generator.o
 
 input_gen: input_generator.o test.cpp
 	g++ -I$(INC) -o input_gen input_generator.o test.cpp

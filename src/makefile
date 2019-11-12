@@ -6,12 +6,9 @@ $(SUBDIRS):
 	$(MAKE) -C $@
 
 install:
-	mkdir -p ../bin
-	mkdir -p ../lib
+	mkdir ../bin
 	cp graph_generator/*_gen ../bin/
-	mv graph_generator/*.a ../lib/
 	cp input_generator/*_gen ../bin/
-	mv input_generator/*.a ../lib/
 
 
 clean:
