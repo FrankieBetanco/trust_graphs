@@ -5,10 +5,11 @@ all: $(SUBDIRS)
 $(SUBDIRS): 
 	$(MAKE) -C $@
 
-install:
+install: all
 	mkdir ../bin
 	cp graph_generator/*_gen ../bin/
 	cp input_generator/*_gen ../bin/
+	cp trust_graphs/trust_graph ../bin/
 
 
 clean:
