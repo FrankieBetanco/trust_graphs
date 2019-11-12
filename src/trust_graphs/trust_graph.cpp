@@ -8,6 +8,17 @@
 #include "trust_graph.h"
 using namespace std;
 
+const double FIRST_NAME = 0.25;
+const double LAST_NAME = 0.25;
+const double AGE = 0.25;
+const double GENDER = 0.05;
+const double ID = 0.05;
+const double EMAIL = 0.05;
+const double SERVICES = 0.05;
+const double GROUPS = 0.05;
+const double TRUST_PERCENTAGES[] = {0.25, 0.25, 0.25, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05};
+
+
 trust_graph::trust_graph(string filename) : graph(filename), gen(rd()), 
   dis(0,1) { }
 
@@ -89,16 +100,33 @@ pair<int, int> trust_graph::compute_outdegree(int node, int attribute) {
   return make_pair(anonymity_outdegree, privacy_outdegree);
 }
 
+// compute the overall trustworthiness of a user by summing up the 
+// amount all other users trust "node" and dividing by the number of 
+// users - 1 since you don't want to consider how much a node trusts 
+// itself in the calculation of overall trust
 double trust_graph::compute_trustworthiness(int node) {
-
-  return 0.0;
+  double trustworthiness = 0.0;
+  for (int i = 0; i < adj_privacy.size(); i++) {
+    if ( i != node) trustworthiness += node_trust(i, node);   
+  }
+  return trustworthiness / (users.size() - 1);
 }
 
-// compute how much node from trusts node to
+// compute how much node "from" trusts node "to"
 double trust_graph::node_trust(int from, int to) {
-  return 0.0;
+  double trustedness = 1.0; 
+  for (int i = 0; i < 8; i++) {
+    trustedness -= ((adj_privacy[from][to] >> i) & 1) * TRUST_PERCENTAGES[i];
+    trustedness -= ((adj_anonymity[from][to] >> i) & 1) * TRUST_PERCENTAGES[i];
+  }
+  // round off to 0 when values are very small
+  if (trustedness < 1e-10) trustedness = 0.0;
+  return trustedness;
 }
 
+// computes the sum of the trust from node "from" to node "to", and
+// vice versa, then sums up, and divides by two. Intuitively, this is the
+// "strength" of the friendship between two nodes
 double trust_graph::friendship_trust(int from, int to) {
-  return 0.0;
+  return (node_trust(from, to) + node_trust(to, from)) /2;
 }
