@@ -1,6 +1,7 @@
 #include <iostream>
 #include <iomanip>
 #include <cstdio>
+#include <map>
 
 #include "trust_graph.h"
 using namespace std;
@@ -40,9 +41,9 @@ int main(int argc, char **argv) {
     cout << '\n';
   }
 
-  if (action == "edge") {
+  if (action == "node") {
     if (argc < 6) {
-      cerr << "Usage: trust_graph [input_file] [n_events] edge [node] [indegree/outdegree]\n";
+      cerr << "Usage: trust_graph [input_file] [n_events] node [node] [indegree/outdegree]\n";
       return 1;
     }
     int node = stoi(argv[4]);
@@ -64,6 +65,48 @@ int main(int argc, char **argv) {
       for (int i = 0; i < 9; i++) {
         pair <int, int> outdegree = g.compute_outdegree(node, i);
         cout_row(i, outdegree.first, outdegree.second);
+      }
+    } else if (arg == "trustworthiness") {
+        cout << "Node " << node << "'s overall trustworthiness is " 
+             << g.compute_trustworthiness(node) << '\n';
+    }
+  } else if (action == "pair") {
+    if (argc < 7) {
+      cerr << "Usage: trust_graph [input_file] [n_events] pair [node1] [node2] [trustedness]\n";
+      return 1;
+    }
+    int node1 = stoi(argv[4]);
+    int node2 = stoi(argv[5]);
+    string arg = argv[6];
+    if (arg == "trustedness") {
+      cout << "Node1 trusts Node2: " <<  g.node_trust(node1, node2) << "/1.0\n";
+      cout << "Node2 trusts Node1: " <<  g.node_trust(node2, node1) << "/1.0\n";
+      cout << "Friendship Strength: " << g.friendship_trust(node1, node2) << '\n';
+    }
+  } else if (action == "all") {
+    if (argc < 5) {
+      cerr << "Usage: trust_graph [input_file] [n_events] all [trustworthiness]\n";
+      return 1;
+    }
+    string arg = argv[4]; 
+    if (arg == "trustworthiness") {
+      multimap <double, int, greater<double> > users;
+      for (int node = 0; node < g.users.size(); node++) {
+        users.insert(make_pair(g.compute_trustworthiness(node), node));
+      }
+      for (auto i = users.begin(); i != users.end(); i++) {
+        cout << "Node " << i->second << " overall trustworthiness: " 
+             << i->first << '\n';
+      }
+    } else if (arg == "friendship") {
+      multimap <double, string, greater<double> > users;
+      for (int i = 0; i < g.users.size(); i++) {
+        for (int j = 0; j < i; j++) {
+          users.insert(make_pair(g.friendship_trust(i, j), to_string(i) + " to " + to_string(j)));
+        }
+      }
+      for (auto i = users.begin(); i != users.end(); i++) {
+        cout << i->second << " friendship strength: " << i->first << '\n';
       }
     }
   }
