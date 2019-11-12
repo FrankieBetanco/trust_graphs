@@ -267,6 +267,17 @@ void graph::print_group_membership_graph() {
   }
 }
 
+int graph::node_out_of_range(int from, int to) {
+  if ( from < 0 || from > adj_privacy.size() ) {
+    cerr << "Error: from(" << from << ") out of range.\n";
+    return 1;
+  } else if ( to < 0 || from > adj_privacy.size() ) {
+    cerr << "Error: to(" << to << ") out of range.\n";
+    return 1;
+  }
+  return 0; 
+}
+
 /* this will create a new privacy edge for an attribute "attribute_num" from 
  * node "from" to node "to"
  * params: 
@@ -275,14 +286,31 @@ void graph::print_group_membership_graph() {
  *  to: the terminating node for the edge
  */
 void graph::add_privacy_edge(int attribute_num, int from, int to) {
-  //TODO: error check to make sure there is not an existing anonymity edge
-  //that will conflict
-  if ( from < 0 || from > adj_privacy.size() ) {
-    cerr << "Error: from(" << from << ") out of range.\n";
-  } else if ( to < 0 || from > adj_privacy.size() ) {
-    cerr << "Error: to(" << to << ") out of range.\n";
+  if (node_out_of_range(from, to)) {
+    return;
   }
-      adj_privacy[from][to] |= (1 << attribute_num);
+  adj_privacy[from][to] |= (1 << attribute_num);
+  adj_anonymity[from][to] &= ~(1 << attribute_num);
 }
 
-//TODO: add method to create anonymity edges
+void graph::remove_privacy_edge(int attribute_num, int from, int to) {
+  if (node_out_of_range(from, to)) {
+    return;
+  }
+  adj_privacy[from][to] &= ~(1 << attribute_num);
+}
+
+void graph::add_anonymity_edge(int attribute_num, int from, int to) {
+  if (node_out_of_range(from, to)) {
+    return;
+  }
+  adj_anonymity[from][to] |= (1 << attribute_num);
+  adj_privacy[from][to] &= ~(1 << attribute_num);
+}
+
+void graph::remove_anonymity_edge(int attribute_num, int from, int to) {
+  if (node_out_of_range(from, to)) {
+    return;
+  }
+  adj_anonymity[from][to] &= ~(1 << attribute_num);
+}

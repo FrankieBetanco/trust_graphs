@@ -26,6 +26,10 @@ public:
   void node_view(int from, int to);
   void node_view_all(int from); 
   void add_privacy_edge(int attribute_num, int from, int to);
+  void remove_privacy_edge(int attribute_num, int from, int to);
+  void add_anonymity_edge(int attribute_num, int from, int to);
+  int node_out_of_range(int from, int to);
+  void remove_anonymity_edge(int attribute_num, int from, int to);
   void print_binary_graph(int attribute_num, std::vector<std::vector <unsigned short > > &adj);
   void print_privacy_graph(int attribute_num);
   void print_anonymity_graph(int attribute_num);
