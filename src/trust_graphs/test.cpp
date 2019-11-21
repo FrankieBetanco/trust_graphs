@@ -39,6 +39,7 @@ int main(int argc, char **argv) {
       g.random_event();
     }
     cout << '\n';
+    g.compute_trust_graph();
   }
 
   if (action == "node") {
@@ -111,8 +112,8 @@ int main(int argc, char **argv) {
       }
     }
   } else if (action == "print") {
-    g.compute_trust_graph();
-    g.print_trust_graph();
+    //g.print_trust_graph();
+    g.min_spanning_tree();
   }
 
   return 0;

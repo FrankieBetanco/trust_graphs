@@ -4,8 +4,11 @@
 #include <queue> 
 #include <algorithm> 
 #include <random>
+#include <map>
+#include <set>
 
 #include "trust_graph.h"
+#include "disjoint_set.h"
 using namespace std;
 
 const double FIRST_NAME = 0.25;
@@ -165,5 +168,39 @@ void trust_graph::print_trust_graph() {
       cout << setw(6) << setprecision(2) << left << adj_trust[i][j] << " "; 
     }
     cout << '\n';
+  }
+}
+
+// compute minimum spanning trust tree using kruskals algorithm
+void trust_graph::min_spanning_tree() {
+  multimap <double, pair<int, int>, greater<double> > edges; 
+  set <pair <int, int> > mst_edges;
+  DisjointSet *d = new DisjointSet(adj_trust.size());
+
+  // insert all edges into multimap
+  for (int i = 0; i < adj_trust.size(); i++) {
+    for (int j = 0; j < adj_trust[i].size(); j++) {
+      if (i != j) {
+        edges.insert(make_pair(adj_trust[i][j], make_pair(i,j)));
+      }
+    }
+  }
+
+  // start contructing the mst
+  for (auto it = edges.begin(); it != edges.end(); it++) {
+    int from = it->second.first; 
+    int to = it->second.second;
+    if ( d->Find(from) != d->Find(to) ) {
+      d->Union(d->Find(from), d->Find(to));
+      mst_edges.insert(make_pair(from, to));
+    }
+  }
+
+  // print mst
+  cout << "MST contains: \n";
+  for (auto it = mst_edges.begin(); it != mst_edges.end(); it++) {
+    int from = it->first;
+    int to = it->second;
+    cout << from << "->" << to << ": " << adj_trust[from][to] << '\n';
   }
 }

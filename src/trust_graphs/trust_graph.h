@@ -20,4 +20,5 @@ class trust_graph : public graph {
     double friendship_trust(int from, int to);
     void compute_trust_graph();
     void print_trust_graph();
+    void min_spanning_tree();
 };

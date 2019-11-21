@@ -1,6 +1,6 @@
 default: graph_gen
 
-LIB = -L../../lib -lgraph_generator
+LIB = -L../../lib -lgraph_generator -ldisjoint_set
 INC = -I../../include
 
 trust_graph.o: trust_graph.cpp test.cpp
