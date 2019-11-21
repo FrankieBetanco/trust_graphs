@@ -52,7 +52,8 @@ int main(int argc, char **argv) {
       cerr << "Node #" << node << " is out of range\n";
       return 1;
     }
-    if (arg == "indegree") {
+
+    if (arg == "indegree") { // computations on an individual node
       cout << "Computing indegree for node " << node << "\n";
       cout_table_header();
       for (int i = 0; i < 9; i++) {
@@ -70,7 +71,7 @@ int main(int argc, char **argv) {
         cout << "Node " << node << "'s overall trustworthiness is " 
              << g.compute_trustworthiness(node) << '\n';
     }
-  } else if (action == "pair") {
+  } else if (action == "pair") { //computations on a pair of nodes
     if (argc < 7) {
       cerr << "Usage: trust_graph [input_file] [n_events] pair [node1] [node2] [trustedness]\n";
       return 1;
@@ -83,7 +84,7 @@ int main(int argc, char **argv) {
       cout << "Node2 trusts Node1: " <<  g.node_trust(node2, node1) << "/1.0\n";
       cout << "Friendship Strength: " << g.friendship_trust(node1, node2) << '\n';
     }
-  } else if (action == "all") {
+  } else if (action == "all") { //computations on all of the nodes
     if (argc < 5) {
       cerr << "Usage: trust_graph [input_file] [n_events] all [trustworthiness]\n";
       return 1;
@@ -109,6 +110,10 @@ int main(int argc, char **argv) {
         cout << i->second << " friendship strength: " << i->first << '\n';
       }
     }
+  } else if (action == "print") {
+    g.compute_trust_graph();
+    g.print_trust_graph();
   }
+
   return 0;
 }

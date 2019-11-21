@@ -16,11 +16,16 @@ const double ID = 0.05;
 const double EMAIL = 0.05;
 const double SERVICES = 0.05;
 const double GROUPS = 0.05;
-const double TRUST_PERCENTAGES[] = {0.25, 0.25, 0.25, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05};
+const double TRUST_PERCENTAGES[] = {0.25, 0.25, 0.25, 0.05, 0.05, 0.05, 0.05, 
+                                    0.05, 0.05};
 
-
-trust_graph::trust_graph(string filename) : graph(filename), gen(rd()), 
-  dis(0,1) { }
+trust_graph::trust_graph(string filename) 
+  : dis(0,1), graph(filename), gen(rd()) {
+  adj_trust.resize(users.size());
+  for(int i = 0; i < adj_trust.size(); i++) {
+    adj_trust[i].resize(users.size());
+  }
+}
 
 double trust_graph::rand() {
   return dis(gen);
@@ -129,4 +134,36 @@ double trust_graph::node_trust(int from, int to) {
 // "strength" of the friendship between two nodes
 double trust_graph::friendship_trust(int from, int to) {
   return (node_trust(from, to) + node_trust(to, from)) /2;
+}
+
+void trust_graph::trust_graph::compute_trust_graph() {
+  for (int i = 0; i < adj_trust.size(); i++) {
+    for (int j = 0; j < adj_trust[i].size(); j++) {
+      if (i != j) {
+        adj_trust[i][j] = node_trust(i,j);
+      }
+    }
+  }
+}
+
+// prints the weighted graph of the trust between users
+void trust_graph::print_trust_graph() {
+  // print table header
+  cout << setw(6) << " ";
+  for(int i = 0; i < adj_trust.size(); i++) {
+    cout << setw(6) << left << i << " "; 
+  }
+  cout << '\n';
+  for (int i = 0; i < adj_trust.size() + 1; i++) {
+    cout << setw(7) << setfill('-') << "";
+  }
+  cout << setfill(' ') << '\n';
+
+  for (int i = 0; i < adj_trust.size(); i++) {
+    cout << setw(4) << left << i << "| ";
+    for (int j = 0; j < adj_trust[i].size(); j++) {
+      cout << setw(6) << setprecision(2) << left << adj_trust[i][j] << " "; 
+    }
+    cout << '\n';
+  }
 }
