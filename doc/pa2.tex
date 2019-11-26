@@ -1,0 +1,232 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+
+\title{CS5413 Programming Assignment 2}
+\author{Frankie Betancourt }
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+This programming assignment focuses on examining a weighted trust graph created
+from privacy and anonymity graphs. The implementation is in C++, and was done 
+in a subclass that extends the vanilla PPAI graph from PA1. Then, once the graph was
+created, code was written to identify strongly-trusted components, 
+shortest-trust-path, and minimum spanning trust tree. Additionally, a new trust 
+variable beyond PPAI was created called ``interaction'', that enhances how trust
+is computed. 
+
+\section{Overall data structure description} 
+The main data structure is an adjacency matrix that contains the weighted trust edges.
+The computation of the edge weights will be discussed in greater detail later. 
+
+\section{Computation of Trust} 
+There are two types of edges in the graph: privacy edges, and anonymity edges. The
+interpretation is that a directed edge from one user to another indicates that the 
+attribute in question is to be kept either anonymous, or private from the terminating
+end of the edge. This results in edges increasing the ``distrust'' of a user, and thus
+a higher indegree of a node indicates more distrust, and a higher outdegree indicates
+that a user distrusts more people in general. 
+
+Recall that the users permissions are represented as a number. Viewing the number in
+binary, the \(n^{th}\) bit in the number represents the \(n^{th}\) user attribute. A
+value of 1 for the bit indicates that they want to have an edge of the type of   
+that attribute beginning at the current user, and terminating at all other      
+users. To start, the anonymity and privacy permissions are the bit-wise complement of 
+one another. This results in initially having all users fully distrusting one another.
+
+I chose to give each attribute a weight, with all of the weights adding up to 1. For 
+example, the weight of name is 25\% and age is 25\%, so if user 1 has name and age
+(anonymity or privacy) edges to user 2, then user 1 only trusts user 2 50\%. The other
+factor taken in to account is the user interaction score. 
+
+\section{User Interaction}
+For the new variable beyond PPAI, I chose to include user interaction. A positive 
+interaction score indicates that a user mostly trusts other users, and negative one
+indications that the user mostly makes changes that distrust other users. Initially, 
+all users interaction starts at 0, and can range between -1 and 1. The computation is
+as follows: if a user makes a change to add an edge, then the interaction score is
+then decreased by 0.01, and if the user chooses to remove an edge, then the 
+interaction score is increased by 0.01. The overall interaction score is also 
+taken into account when computing node-to-node trust. This lets the trust and distrust
+computation have some amount of ``momentum'' incoporated in to it: users that tend to
+distrust other users will contribute less strongly to the overall trustedness of a 
+user, and vice versa. 
+
+So, the computation of trust is the sum of the weights of all attribute edges, 
+as well as the overall trust score. For example, if the sum of all the edges
+weights from user 1 to user 2 is .5, and the overall user interaction score is -.1, then the weight of the edge from user 1 to user 2 is .4.
+
+\section{Program: trust\_graph}
+For convenience, test inputs are provided, with 10, 50, and 100 users. They can be 
+found in the directory src/trust\_graph/test\_inputs. 
+
+\section{Building}                                                              
+Submitted is a tarfile containing the repository. After untarring, simply       
+change directory to "src", and run "make". This should make all of the executables.   
+
+\subsection{Usage}
+Usage is as follows: 
+\begin{verbatim}
+trust_graph [input_file] [n_events] [node/pair/all/print]
+\end{verbatim}
+The input file is a csv in the format as outlined in PA1, and examples are provided 
+in the directory src/trust\_graph/test\_inputs. The n\_events parameter specifies the 
+number of ``trust\_events'' that should be performed. What this means is that for
+each event, a privacy or anonymity edge is added or removed from the graph. The 
+probability of adding an edge is 50\%, and the same for removing. The probability of
+the edge type being privacy 50\%, and the same for anonymity. Then, the third 
+argument lets you mak queries about a single node, a pair of nodes, all nodes, 
+or print out the trust\_graph. 
+
+\subsubsection{Node operations}
+For the ``node'' type operations, there are 3 types of queries that can be made: 
+indegreee, outdegree, and trustworthiness. 
+
+An example of an indegree query is: 
+\begin{verbatim}
+./trust_graph 10_people.csv 10000 node 10 indegree
+\end{verbatim}
+This command will read create a trust graph for the input file ``10\_people.csv'', 
+do 10000 trust events, and then query the indegree of node 10. In my case, the output
+will be: 
+\begin{verbatim}
+    attribute      privacy        anonymity      
+---------------------------------------------
+0              4              4              
+1              4              5              
+2              2              7              
+3              2              7              
+4              3              6              
+5              4              5              
+6              4              5              
+7              0              1              
+8              1              8        
+\end{verbatim}
+
+Outdegree queries are similar, only the 5th argument is changed to ``outdegree''. 
+
+The other type of single node query that can be made is overall trustworthiness. The
+way this is computed is sum up all of the weights of the incoming edges, and divide
+by the number of edges in the graph. This will show how much the node is trusted 
+on average. For example the command: 
+\begin{verbatim}
+./trust_graph 10_people.csv 10000 node 10 trustworthiness
+\end{verbatim}
+will compute the overall trustworthiness of node 10 after 10000 trust events: 
+\begin{verbatim}
+Node 10's overall trustworthiness is 0.371111
+\end{verbatim}
+\subsubsection{Node Pairs}
+For node ``pair'' operations, one can specify two nodes, and then get either
+the shortest trust path, or amount of node 1 trusts node 2. 
+
+For example, the command: 
+\begin{verbatim}
+./trust_graph 10_people.csv 10000 pair 2 5 path
+\end{verbatim}
+will compute the shortest trust path from 2 to 5 using Dijkstra's Algorithm: 
+\begin{verbatim}
+Path from destination to source
+6<-2<-5
+Path length = 0.22
+\end{verbatim}
+
+For trustedness, the command: 
+\begin{verbatim}
+./trust_graph 10_people.csv 10000 pair 2 5 trustedness
+\end{verbatim}
+Will compute how much node 2 trusts node 5: 
+\begin{verbatim}
+Node1 trusts Node2: 0.69/1.0
+Node2 trusts Node1: 0.22/1.0
+Friendship Strength: 0.455
+\end{verbatim}
+The freindship strength is calculated as 
+\[ \frac{\textnormal{node 1 to node 2 edge weight} + \textnormal{node 2 to node 1 edge weight}}{2}\]
+
+\subsubsection{All}
+For ``all'' type computations, this will give information about the graph as a whole. 
+This will allow queries of the trustworthiness for all nodes, friendship for all nodes, strongly connected components, and minimum spanning tree. 
+
+For example, the command 
+\begin{verbatim}
+./trust_graph 10_people.csv 10000 all friendship
+\end{verbatim}
+Will compute the friendship strength for all pairs and output a sorted list: 
+\begin{verbatim}
+8 to 3 friendship strength: 0.725
+8 to 2 friendship strength: 0.72
+8 to 4 friendship strength: 0.68
+6 to 4 friendship strength: 0.63
+7 to 5 friendship strength: 0.575
+[output truncated]
+\end{verbatim}
+
+Trustworthiness is also similar, providing a list of all nodes sorted by the
+overall trustworthiness as discussed previously. 
+
+The command: 
+\begin{verbatim}
+./trust_graph 10_people.csv 10000 all components
+\end{verbatim}
+will provide a list of all strongly connected components using Kosaraju's Algorithm: 
+\begin{verbatim}
+component 0 consists of: 0 1 7 
+component 1 consists of: 2 3 4 5 8 9 
+component 2 consists of: 6
+\end{verbatim}
+
+The command:
+\begin{verbatim}
+./trust_graph 10_people.csv 10000 all mst
+\end{verbatim}
+will provide a list of edges that from the minimum spanning tree of the trust graph using Kruskal's Algorithm:
+\begin{verbatim}
+MST contains: 
+0->5: 0.72
+1->6: 0.71
+2->7: 0.78
+2->8: 0.86
+[output truncated]
+\end{verbatim}
+
+Finally, the command 
+\begin{verbatim}
+./trust_graph 10_people.csv 10000 print
+\end{verbatim}
+Will print the adjacency matrix for the graph: 
+\begin{verbatim}
+      0      1      2      3      4      5      6      7      8      9      
+-----------------------------------------------------------------------------
+0   | 0      0.34   0.42   0.06   0.34   0.72   0.53   0.38   0.1    0.21   
+1   | 0.13   0      0.01   0.32   0.49   0.09   0.71   0.03   0      0.34   
+2   | 0      0.28   0      0.39   0.29   0.69   0.15   0.78   0.86   0.2    
+3   | 0      0.33   0.32   0      0.34   0.13   0.43   0.14   0.93   0.13   
+4   | 0.22   0.35   0.28   0.13   0      0.7    0.84   0.6    0.75   0.22   
+5   | 0.34   0.38   0.22   0.55   0.07   0      0.3    0.94   0.08   0      
+6   | 0.07   0.18   0.44   0      0.42   0.07   0      0.73   0.8    0.19   
+7   | 0.53   0.53   0.28   0      0.07   0.21   0.36   0      0.39   0.51   
+8   | 0.23   0.29   0.58   0.52   0.61   0.07   0.13   0.16   0      0.04   
+9   | 0.15   0.3    0.31   0.78   0.27   0.33   0.45   0.4    0.38   0      
+\end{verbatim}
+
+\section{Trust History}
+For this system, the trust history of an individual user cannot be kept private. The
+reason is that a user is able to compute the their own trust by looking at other 
+users, and seeing what information is available. If the information is not available, 
+they can tell that there is an edge from the user in question to the querying user. 
+This results in the user being able to tell if a user trusts or distrusts them. 
+However, this only applies for a single user to all other users; they cannot see
+the trust values between two arbitrary users. Thus, the trust history cannot be
+guaranteed to be kept private. 
+
+\section{Conclusion}
+The proposed, trust based, semi-sovereign identity management system provides ways to
+manage the various traits and their visibility to others on the system, and provides
+ways to analyze graph data, and simulate user interactions. The system takes in to 
+account not only the individual interactions, but the history of a users interactions
+to determine the amount of weight to give to another users trust or distrust. 
+\end{document}

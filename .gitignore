@@ -1,6 +1,3 @@
-# Generated input files
-*.csv
-
 # results of compilation
 *.o 
 *.a
