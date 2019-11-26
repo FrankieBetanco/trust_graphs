@@ -16,4 +16,5 @@ clean:
 	cd graph_generator && $(MAKE) clean
 	cd input_generator && $(MAKE) clean
 	cd trust_graphs && $(MAKE) clean
+	cd disjoint_set && $(MAKE) clean
 	rm -rf ../bin ../lib
