@@ -133,6 +133,10 @@ void graph::construct_graph() {
   for (int i = 0; i < adj_privacy.size(); i++) {
     adj_privacy[i].resize(n_users);
     adj_anonymity[i].resize(n_users);
+    for (int j = 0; j < adj_privacy[i].size(); j++) {
+      adj_privacy[i][j] = 0;
+      adj_anonymity[i][j] = 0;
+    }
   }
 
   // construct the privacy graph and anonymity graph

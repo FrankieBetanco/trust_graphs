@@ -30,6 +30,14 @@ trust_graph::trust_graph(string filename)
     adj_trust[i].resize(users.size());
   }
 
+  adj_interaction.resize(users.size());
+  for (int i = 0; i < users.size(); i++) {
+      adj_interaction[i].resize(users.size());
+      for(int j = 0; j < adj_interaction[i].size(); j++) {
+        adj_interaction[i][j] = 0;
+      }
+  }
+
   dfs_tree.resize(users.size()); 
   for (int i = 0; i < dfs_tree.size(); i++) {
     dfs_tree[i].resize(users.size());
@@ -37,6 +45,7 @@ trust_graph::trust_graph(string filename)
       dfs_tree[i][j] = 0;
     }
   }
+  compute_trust_graph();
 }
 
 double trust_graph::rand() {
@@ -77,13 +86,17 @@ void trust_graph::random_event() {
   int n_attributes = 9;
   int attribute_num = 10 * rand();
   if (privacy && add) {
+    user_interaction(from, to, 0);
     add_privacy_edge(attribute_num, from, to);
   } else if (privacy && !add) {
     remove_privacy_edge(attribute_num, from, to);
+    user_interaction(from, to, 1);
   } else if (!privacy && add) {
     add_anonymity_edge(attribute_num, from, to);
+    user_interaction(from, to, 0);
   } else if (!privacy && !add) {
     remove_anonymity_edge(attribute_num, from, to);
+    user_interaction(from, to, 1);
   }
 }
 
@@ -133,13 +146,17 @@ double trust_graph::compute_trustworthiness(int node) {
 double trust_graph::node_trust(int from, int to) {
   double trustedness = 1.0; 
   for (int i = 0; i < 8; i++) {
-    trustedness -= ((adj_privacy[from][to] >> i) & 1) * TRUST_PERCENTAGES[i];
-    trustedness -= ((adj_anonymity[from][to] >> i) & 1) * TRUST_PERCENTAGES[i];
+    trustedness -= (((adj_privacy[from][to] >> i) & 1) * TRUST_PERCENTAGES[i]);
+    trustedness -= (((adj_anonymity[from][to] >> i) & 1) * TRUST_PERCENTAGES[i]);
   }
+
+  // make trust strictly between 0 and 1
+  trustedness += adj_interaction[from][to];
+  if (trustedness > 1) trustedness = 1;
+  if (trustedness < 0) trustedness = 0;
   // round off to 0 when values are very small
   if (trustedness < 1e-10) trustedness = 0.0;
 
-  //trustedness = (trustedness <  0.5) ? 0 : 1;
   return trustedness;
 }
 
@@ -299,7 +316,6 @@ void trust_graph::strongly_trusted_components() {
   priority_queue <pair<int, int> > finishing_times;
 
   // run the initial dfs to find finishing times
-  compute_trust_graph();
   for (int i = 0; i < users.size(); i++) {
     if (!users[i]->discovered) {
       dfs(i);
@@ -349,5 +365,44 @@ void trust_graph::strongly_trusted_components() {
       cout << '\n';
     }
     finishing_times.pop();
+  }
+}
+
+/* modify interaction number. this is used when calculating node to node trust
+ * params: 
+ *  n1: the node that is doing the interaction
+ *  n2: the node that is receiving the interaction
+ *  pn: whether the interaction is positive (n1 increases trust of n2) or 
+ *      negative (n1 increases distrust of n2)
+ */
+void trust_graph::user_interaction(int n1, int n2, int pn) {
+  if (pn) {
+    adj_interaction[n1][n2] += .01;
+    if (adj_interaction[n1][n2] > 1) adj_interaction[n1][n2] = 1;
+  } else {
+    adj_interaction[n1][n2] -= .01;
+    if (adj_interaction[n1][n2] < -1) adj_interaction[n1][n2] = -1;
+  }
+}
+
+void trust_graph::group_cross_section() {
+  // create a new graph of the cross sectional graph
+  vector<vector<unsigned short> > user_group_graph(groups.size(), vector<unsigned short>(users.size()));
+
+  for (int i = 0; i < groups.size(); i++) {
+    for (int j = 0; j < groups[i]->members.size(); j++) {
+      if (i != j) {
+        int num = random() % 512;
+        user_group_graph[i][j] = num;
+        user_group_graph[j][i] = num;
+      }
+    }
+  }
+
+  for (int i = 0; i < user_group_graph.size(); i++) {
+    for (int j = 0; j < user_group_graph[i].size(); j++) {
+      cout << setw(5) << user_group_graph[i][j];
+    }
+    cout << '\n';
   }
 }

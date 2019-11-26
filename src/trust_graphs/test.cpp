@@ -39,8 +39,8 @@ int main(int argc, char **argv) {
       g.random_event();
     }
     cout << '\n';
-    g.compute_trust_graph();
   }
+  g.compute_trust_graph();
 
   if (action == "node") {
     if (argc < 6) {
@@ -88,14 +88,13 @@ int main(int argc, char **argv) {
     else if (arg == "path") {
       int source = node1; 
       int destination = node2;
-      g.compute_trust_graph();
 
       //      g.print_trust_graph();
       g.min_path(node1, node2);
     }
   } else if (action == "all") { //computations on all of the nodes
     if (argc < 5) {
-      cerr << "Usage: trust_graph [input_file] [n_events] all [trustworthiness/friendship/components]\n";
+      cerr << "Usage: trust_graph [input_file] [n_events] all [trustworthiness/friendship/components/mst]\n";
       return 1;
     }
     string arg = argv[4]; 
@@ -121,7 +120,6 @@ int main(int argc, char **argv) {
     } else if (arg == "components") {
       g.strongly_trusted_components();
     } else if (arg == "dfs") {
-      g.compute_trust_graph();
       for (int i = 0; i < g.users.size(); i++) {
         if (!g.users[i]->discovered) {
           g.dfs(i);
@@ -133,6 +131,8 @@ int main(int argc, char **argv) {
     }
   } else if (action == "print") {
     g.print_trust_graph();
+  } else if (action == "ugg") {
+    g.group_cross_section();
   }
 
   return 0;

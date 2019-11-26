@@ -11,6 +11,7 @@ class trust_graph : public graph {
 
   public: 
     std::vector <std::vector<double> > adj_trust;
+    std::vector <std::vector<double> > adj_interaction;
     std::vector <std::vector<double> > dfs_tree;
     trust_graph(std::string filename);
     double rand();
@@ -27,4 +28,6 @@ class trust_graph : public graph {
     void dfs(int source);
     void print_dfs_tree();
     void strongly_trusted_components();
+    void user_interaction(int n1, int n2, int pn);
+    void group_cross_section();
 };
