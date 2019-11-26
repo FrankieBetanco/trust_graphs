@@ -1,4 +1,4 @@
-SUBDIRS = graph_generator input_generator trust_graphs
+SUBDIRS = graph_generator input_generator disjoint_set trust_graphs
 .PHONY: $(SUBDIRS) clean
 
 all: $(SUBDIRS)
