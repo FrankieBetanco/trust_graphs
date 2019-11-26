@@ -16,13 +16,13 @@ void cout_table_header() {
 
 void cout_row(int col1, int col2, int col3) {
   cout << setw(15) << left << col1
-       << setw(15) << left << col2
-       << setw(15) << left << col3 << '\n';
+    << setw(15) << left << col2
+    << setw(15) << left << col3 << '\n';
 }
 
 int main(int argc, char **argv) {
   if (argc < 4) {
-    cerr << "Usage: trust_graph [input_file] [n_events] [action]\n";
+    cerr << "Usage: trust_graph [input_file] [n_events] [node/pair/all/print]\n";
     return 1;
   }
   string file = argv[1];
@@ -44,7 +44,7 @@ int main(int argc, char **argv) {
 
   if (action == "node") {
     if (argc < 6) {
-      cerr << "Usage: trust_graph [input_file] [n_events] node [node] [indegree/outdegree]\n";
+      cerr << "Usage: trust_graph [input_file] [n_events] node [node] [indegree/outdegree/trustworthiness]\n";
       return 1;
     }
     int node = stoi(argv[4]);
@@ -69,12 +69,12 @@ int main(int argc, char **argv) {
         cout_row(i, outdegree.first, outdegree.second);
       }
     } else if (arg == "trustworthiness") {
-        cout << "Node " << node << "'s overall trustworthiness is " 
-             << g.compute_trustworthiness(node) << '\n';
-    }
+      cout << "Node " << node << "'s overall trustworthiness is " 
+        << g.compute_trustworthiness(node) << '\n';
+    } 
   } else if (action == "pair") { //computations on a pair of nodes
     if (argc < 7) {
-      cerr << "Usage: trust_graph [input_file] [n_events] pair [node1] [node2] [trustedness]\n";
+      cerr << "Usage: trust_graph [input_file] [n_events] pair [node1] [node2] [trustedness/path]\n";
       return 1;
     }
     int node1 = stoi(argv[4]);
@@ -85,9 +85,17 @@ int main(int argc, char **argv) {
       cout << "Node2 trusts Node1: " <<  g.node_trust(node2, node1) << "/1.0\n";
       cout << "Friendship Strength: " << g.friendship_trust(node1, node2) << '\n';
     }
+    else if (arg == "path") {
+      int source = node1; 
+      int destination = node2;
+      g.compute_trust_graph();
+
+      //      g.print_trust_graph();
+      g.min_path(node1, node2);
+    }
   } else if (action == "all") { //computations on all of the nodes
     if (argc < 5) {
-      cerr << "Usage: trust_graph [input_file] [n_events] all [trustworthiness]\n";
+      cerr << "Usage: trust_graph [input_file] [n_events] all [trustworthiness/friendship/components]\n";
       return 1;
     }
     string arg = argv[4]; 
@@ -98,7 +106,7 @@ int main(int argc, char **argv) {
       }
       for (auto i = users.begin(); i != users.end(); i++) {
         cout << "Node " << i->second << " overall trustworthiness: " 
-             << i->first << '\n';
+          << i->first << '\n';
       }
     } else if (arg == "friendship") {
       multimap <double, string, greater<double> > users;
@@ -109,11 +117,22 @@ int main(int argc, char **argv) {
       }
       for (auto i = users.begin(); i != users.end(); i++) {
         cout << i->second << " friendship strength: " << i->first << '\n';
+      } 
+    } else if (arg == "components") {
+      g.strongly_trusted_components();
+    } else if (arg == "dfs") {
+      g.compute_trust_graph();
+      for (int i = 0; i < g.users.size(); i++) {
+        if (!g.users[i]->discovered) {
+          g.dfs(i);
+        }
       }
+      g.print_dfs_tree();
+    } else if (arg == "mst") {
+      g.min_spanning_tree();
     }
   } else if (action == "print") {
-    //g.print_trust_graph();
-    g.min_spanning_tree();
+    g.print_trust_graph();
   }
 
   return 0;
