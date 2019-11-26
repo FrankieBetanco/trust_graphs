@@ -20,13 +20,22 @@ const double EMAIL = 0.05;
 const double SERVICES = 0.05;
 const double GROUPS = 0.05;
 const double TRUST_PERCENTAGES[] = {0.25, 0.25, 0.25, 0.05, 0.05, 0.05, 0.05, 
-                                    0.05, 0.05};
+  0.05, 0.05};
 
 trust_graph::trust_graph(string filename) 
-  : dis(0,1), graph(filename), gen(rd()) {
+  : dis(0,1), graph(filename), gen(25555), time(0)
+{
   adj_trust.resize(users.size());
   for(int i = 0; i < adj_trust.size(); i++) {
     adj_trust[i].resize(users.size());
+  }
+
+  dfs_tree.resize(users.size()); 
+  for (int i = 0; i < dfs_tree.size(); i++) {
+    dfs_tree[i].resize(users.size());
+    for (int j = 0; j < dfs_tree.size(); j++) {
+      dfs_tree[i][j] = 0;
+    }
   }
 }
 
@@ -129,6 +138,8 @@ double trust_graph::node_trust(int from, int to) {
   }
   // round off to 0 when values are very small
   if (trustedness < 1e-10) trustedness = 0.0;
+
+  //trustedness = (trustedness <  0.5) ? 0 : 1;
   return trustedness;
 }
 
@@ -202,5 +213,141 @@ void trust_graph::min_spanning_tree() {
     int from = it->first;
     int to = it->second;
     cout << from << "->" << to << ": " << adj_trust[from][to] << '\n';
+  }
+}
+
+/* compute the shortest trust path from source to destination
+ * params: 
+ *  source: the starting node of the path
+ *  destination: the terminating node of the path
+ */
+void trust_graph::min_path(int source, int destination) {
+  priority_queue <pair<double, int>, vector<pair<double, int> >, greater<pair<double, int> > > pq;
+
+  users[source]->distance = 0;
+
+  pq.push(make_pair(users[source]->distance, source));
+
+  while ( !pq.empty() ) {
+    pair <double, int> u = pq.top();
+    pq.pop();
+
+    for (int i = 0; i < adj_trust[u.second].size(); i++) {
+      if ( i != u.second && adj_trust[u.second][i] != 0 ) {
+        double test_distance = u.first + adj_trust[u.second][i];
+        if (test_distance < users[i]->distance) {
+          users[i]->distance = test_distance;
+          users[i]->predecessor = u.second;
+          pq.push(make_pair(users[i]->distance, i));
+        }
+      }
+    }
+  }
+
+  // print out the path that was found
+  cout << "Path from destination to source\n";
+  int tmp = destination;
+  double length = users[tmp]->distance;
+  while ( tmp != -1 ) {
+    tmp = users[tmp]->predecessor;
+    if ( tmp != -1 ) {
+      cout << tmp << "<-";
+    } else {
+      cout << destination << '\n';
+    }
+  }
+  cout << "Path length = " << length << '\n';
+}
+
+double EDGE_THRESHOLD = 0.5;
+
+/* run dfs starting at the given source node. This will construct a 
+ * dfs tree, dfs_tree that is a field of the trust_graph class, 
+ * and store the discovery and finishing times in the user node
+ * params: 
+ *  source: the starting node of the dfs
+ */
+void trust_graph::dfs(int source) {
+  users[source]->discovered = 1;
+  users[source]->discovery_time = time++;
+  for (int i = 0; i < adj_trust[source].size(); i++) {
+    if ( adj_trust[source][i] > EDGE_THRESHOLD && !users[i]->discovered ) {
+      dfs_tree[source][i] = 1;
+      dfs(i);
+    }
+  }
+  users[source]->finishing_time = time++;
+}
+
+/* this will print the dfs tree creaated afer dfs is called */
+void trust_graph::print_dfs_tree() {
+  for (int i = 0; i < dfs_tree.size(); i++) {
+    for (int j = 0; j < dfs_tree[i].size(); j++) {
+      if ( i != j ) {
+        cout << setw(8) << dfs_tree[i][j];
+      } else {
+        string times = "(" + to_string(users[i]->discovery_time) + "/" + to_string(users[i]->finishing_time) + ")";
+        cout << setw(8) << times;
+      }
+    }
+    cout << '\n';
+  }
+}
+
+/* this will find the strongly trusted components of the trust graph */
+void trust_graph::strongly_trusted_components() {
+  priority_queue <pair<int, int> > finishing_times;
+
+  // run the initial dfs to find finishing times
+  compute_trust_graph();
+  for (int i = 0; i < users.size(); i++) {
+    if (!users[i]->discovered) {
+      dfs(i);
+    }
+  }
+
+  for (int i = 0; i < users.size(); i++) {
+    finishing_times.push(make_pair(users[i]->finishing_time, i)); 
+  }
+
+  // reset users discovered to 0
+  for (int i = 0; i < users.size(); i++) {
+    users[i]->discovered = 0;
+    users[i]->discovery_time = -1;
+    users[i]->finishing_time = -1;
+  }
+
+  // reset the dfs tree
+  for (int i = 0; i < dfs_tree.size(); i++) {
+    for (int j = 0; j < dfs_tree[i].size(); j++) {
+      dfs_tree[i][j] = 0;
+    }
+  }
+
+  // transpose the graph
+  for (int i = 0; i < adj_trust.size(); i++) {
+    for (int j = 0; j < adj_trust.size(); j++) {
+      double tmp = adj_trust[i][j]; 
+      adj_trust[i][j] = adj_trust[j][i];
+      adj_trust[j][i] = adj_trust[i][j];
+    }
+  }
+
+  // run dfs again on componenets in order of decreasing finishing time
+  int n = 0;
+  while (!finishing_times.empty()) {
+    if ( !users[finishing_times.top().second]->discovered ) {
+      cout << "component " << n << " consists of: ";
+      n++;
+      dfs(finishing_times.top().second);
+      for (int j = 0; j < users.size(); j++) {
+        if (users[j]->finishing_time > 0 && !users[j]->printed) {
+          cout << j << " ";
+          users[j]->printed = 1;
+        }
+      }
+      cout << '\n';
+    }
+    finishing_times.pop();
   }
 }

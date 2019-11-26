@@ -1,10 +1,25 @@
 #include <vector> 
 #include <string>
+#include <utility>
 
 class user { 
 public: 
   std::vector <std::string> attributes; 
+  int predecessor;
+  double distance;
+  int discovery_time; 
+  int finishing_time;
+  int discovered;
   int node_num; 
+  int printed; 
+  user() { 
+    predecessor = -1; 
+    distance = std::numeric_limits <double>::max(); 
+    discovery_time = -1;
+    finishing_time = -1;
+    discovered = 0;
+    printed = 0;
+  }
 };
 
 class group {
