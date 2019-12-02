@@ -4,3 +4,6 @@
 graph_gen
 input_gen
 trust_graph
+
+# generated documentation
+*.pdf
